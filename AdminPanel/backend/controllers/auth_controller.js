@@ -1,6 +1,8 @@
 import { AuthCollection } from '../models/auth_model.js'
 import bcrypt from 'bcrypt'
 import { sendOTP } from '../services/otp_services.js';
+import { OtpCollection } from '../models/otp_model.js';
+import jwt from 'jsonwebtoken'
 
 export const signup = async (req, res) => {
     const { email, password } = req.body;
@@ -34,9 +36,51 @@ export const signin = async (req, res) => {
     }
 
 } // set auto login to prevent everytime login
-export const verifyOtp = (req, res) => {
+export const verifyOtp = async (req, res) => {
+    const { email, otp } = req.body;
     // match otp
-    // generate jwt and store in cookie
-    // status true
+    const record = await OtpCollection.findOne({ email, otp })//{email,otp,expiry}
+    if (!record) {
+        return res.json({ status: false, message: "OTP is incorrect !" })
+    }
+    // check expiry
+    // 4:02(expiry) < 4:15(current time)
+    if (record.expiry < new Date(Date.now())) {
+        return res.json({ status: false, message: "OTP is expired !" })
+    }
+    await OtpCollection.deleteMany({ email });
+
+    try {
+        const user = await AuthCollection.findOne({ email });
+        // generate jwt and store in cookie - currently login
+        const token = jwt.sign(user, process.env.SECRET_KEY, {
+            expiresIn: "1h",
+        });
+        res.cookie("auth_token", token, { maxAge: 1000 * 60 * 60, httpOnly: true });
+        // status true
+        res.json({ status: true, message: "OTP Verified & Signin successfully !" })
+    } catch (err) {
+        res.json({ status: false, message: "OTP verification failed", err });
+    }
 }
-export const signout = (req, res) => { } // cookie clear
+
+export const signout = (req, res) => {
+    res.clearCookie("auth_token");
+    res.json({ status: true, message: "Signout successfully !!" });
+} // cookie clear
+
+export const checkLoginStatus = (req, res) => {
+    try {
+        const token = req.cookies.auth_token;
+        if (!token) {
+            return res.json({ status: false, message: "Signin First !" });
+        }
+        const decoded = jwt.verify(token, process.env.SECRET_KEY, { expiresIn: "1h" })
+        return res.json({ status: true, message: "Already Logged In", user: decoded.payload })
+    } catch (err) {
+        return res.json({ status: false, message: "Logged out, Login First !", err })
+    }
+}
+
+// {email:"admin@gmail.com"} -> 121edsbnhh5t34r321wqdesfvgt5t34r3dw
+// decode ->  {email:"admin@gmail.com"} 

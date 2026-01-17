@@ -1,10 +1,17 @@
+import express from 'express'
+import cookieParser from 'cookie-parser'
+import dotenv from 'dotenv'
+import { connectDB } from './config/db.js'
+import auth_routes from './routes/auth_routes.js'
+import cors from 'cors'
 
-// auth
+dotenv.config()
+const app = express();
+app.use(cookieParser())
+app.use(express.json())
+app.use(cors())
 
-// multi role, multi collection, populate, aggregation pipline
-// socket(live api)
-// auth - email,password
-// name,phone,
-// 10
+connectDB();
+app.use("/api/auth", auth_routes);
 
-// compass ---> atlas(cloud- 512mb)
+app.listen(process.env.PORT, () => console.log("server started !!"));
