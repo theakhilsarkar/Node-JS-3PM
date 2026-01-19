@@ -14,4 +14,4 @@ app.use(cors())
 connectDB();
 app.use("/api/auth", auth_routes);
 
-app.listen(process.env.PORT, () => console.log("server started !!"));
+app.listen(4040, () => console.log("server started !!"));

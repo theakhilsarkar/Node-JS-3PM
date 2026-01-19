@@ -29,11 +29,7 @@ export const signin = async (req, res) => {
     // send otp
     const status = await sendOTP(email);
 
-    if (status) {
-        res.json({ status: true, message: "OTP Sent successfully !!" });
-    } else {
-        res.json({ status: false, message: "OTP cant sent !!" });
-    }
+    res.json(status);
 
 } // set auto login to prevent everytime login
 export const verifyOtp = async (req, res) => {
@@ -48,19 +44,19 @@ export const verifyOtp = async (req, res) => {
     if (record.expiry < new Date(Date.now())) {
         return res.json({ status: false, message: "OTP is expired !" })
     }
-    await OtpCollection.deleteMany({ email });
+
 
     try {
         const user = await AuthCollection.findOne({ email });
         // generate jwt and store in cookie - currently login
-        const token = jwt.sign(user, process.env.SECRET_KEY, {
-            expiresIn: "1h",
+        const token = jwt.sign({ ...user }, process.env.SECRET_KEY, {
+            expiresIn: 1000 * 60 * 60
         });
         res.cookie("auth_token", token, { maxAge: 1000 * 60 * 60, httpOnly: true });
-        // status true
+        await OtpCollection.deleteMany({ email });
         res.json({ status: true, message: "OTP Verified & Signin successfully !" })
     } catch (err) {
-        res.json({ status: false, message: "OTP verification failed", err });
+        res.json({ status: false, message: "OTP verification failed", err: err.message });
     }
 }
 
@@ -84,3 +80,14 @@ export const checkLoginStatus = (req, res) => {
 
 // {email:"admin@gmail.com"} -> 121edsbnhh5t34r321wqdesfvgt5t34r3dw
 // decode ->  {email:"admin@gmail.com"} 
+
+
+
+// signup
+// signin
+// otp verify
+// home
+
+
+// change password
+// forget password
