@@ -2,15 +2,25 @@ import axios from 'axios';
 import React, { useState } from 'react'
 import { base_uri } from '../utils/global_variable.js'
 import { Link } from 'react-router'
+import { useNavigate } from 'react-router'
 
 export default function SignIn() {
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const handleSignin = async () => {
         const user = { email, password }
-        const res = await axios.post(`${base_uri}/auth/signin`, user);
-        alert(res.data.message);
+        try {
+            const res = await axios.post(`${base_uri}/auth/signin`, user);
+            alert(res.data.message);
+            if (res.data.status) {
+                navigate("/verify-otp", { state: email });
+            }
+        } catch (err) {
+            alert(err.message);
+        }
     }
 
     return (
@@ -40,3 +50,6 @@ export default function SignIn() {
         </div>
     )
 }
+
+
+// auth frontend + backend
