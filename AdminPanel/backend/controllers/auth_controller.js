@@ -78,16 +78,63 @@ export const checkLoginStatus = (req, res) => {
     }
 }
 
-// {email:"admin@gmail.com"} -> 121edsbnhh5t34r321wqdesfvgt5t34r3dw
-// decode ->  {email:"admin@gmail.com"} 
-
-
-
-// signup
-// signin
-// otp verify
-// home
-
-
 // change password
+// email
+// old password==user.password, new password - bcrypt
+export const changePassword = async (req, res) => {
+    const { email, oldPassword, newPassword } = req.body;
+    try {
+        const user = await AuthCollection.findOne({ email });
+        if (!user) {
+            return res.json({ status: false, message: "user not found !" })
+        }
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.json({ status: false, message: "old password is incorrect !" })
+        }
+        const hashed = await bcrypt.hash(newPassword, 12);
+        await AuthCollection.updateOne({ email }, {
+            $set: {
+                password: hashed
+            }
+        })
+        res.json({ status: true, message: "password changed successfully !" });
+    } catch (err) {
+        res.json({ status: false, message: err.message })
+    }
+}
+
 // forget password
+// email -> otp -> new password
+
+export const forgetPassword = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const status = await sendOTP(email);
+        res.json(status);
+    } catch (err) {
+        res.json({ status: false, message: err.message })
+    }
+}
+
+export const changeForgetPassword = async (req, res) => {
+    const { email, password, otp } = req.body;
+    try {
+        const record = await OtpCollection.findOne({ email, otp });
+        if (!record) {
+            return res.json({ status: false, message: "otp is incorrect !" });
+        }
+        if (record.expiry < new Date(Date.now())) {
+            return res.json({ status: false, message: "otp expired !" })
+        }
+        const hashed = await bcrypt.hash(password, 12);
+        await AuthCollection.updateOne({ email }, {
+            $set: {
+                password: hashed
+            }
+        })
+        res.json({ status: true, message: "Password updated successfully !" })
+    } catch (err) {
+        res.json({ status: false, message: err.message })
+    }
+}
