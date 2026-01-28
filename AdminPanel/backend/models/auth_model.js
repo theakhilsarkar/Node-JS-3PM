@@ -7,7 +7,6 @@ const authSchema = new mongoose.Schema({
 
 export const AuthCollection = mongoose.model("auth", authSchema);
 
-// D Drive - database
-// photos - collection
-// movies
-// code
+// employee management system - 
+// manager,admin(hr), employee
+// user - email
