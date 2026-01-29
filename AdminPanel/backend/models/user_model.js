@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     age: Number,
     exp: String,
     image: String,
-}, { timestamps: true })
+})
 
 export const UserCollection = mongoose.model("users", userSchema);
 

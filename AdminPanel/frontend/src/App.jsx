@@ -7,6 +7,8 @@ import VerifyOtp from './pages/VerifyOtp'
 import VerifyForgetPassword from './pages/VerifyForgetPassword'
 import ForgetPassword from './pages/ForgetPassword'
 import ChangePassword from './pages/ChangePassword'
+import Home from './pages/Home'
+import Profile from './pages/Profile'
 
 function App() {
 
@@ -19,6 +21,8 @@ function App() {
         <Route path='/verify-forget-passsword' element={<VerifyForgetPassword />} />
         <Route path='/forget-passsword' element={<ForgetPassword />} />
         <Route path='/change-passsword' element={<ChangePassword />} />
+        <Route path='/home' element={<Home />} />
+        <Route path='/profile' element={<Profile />} />
       </Routes>
     </>
   )
